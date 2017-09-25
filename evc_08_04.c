@@ -1,0 +1,1 @@
+//solve simplified matrix with LR method

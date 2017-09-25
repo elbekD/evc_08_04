@@ -1,0 +1,1 @@
+//simplify input matrix to three-diagonal matrix
