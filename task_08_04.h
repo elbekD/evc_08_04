@@ -1,9 +1,11 @@
-//all declarations here
-//gcc -x c
+#ifndef TASK_08_04
+#define TASK_08_04
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <string.h>
 
 char debug;
 char error;
@@ -48,3 +50,5 @@ int evc_08_04(int n, int max_iterations, double epsilon, double* A, double* E, d
  * @return   0 - в случае успеха
  */
 int evc_memsize_SS_NN(int n);
+
+#endif
