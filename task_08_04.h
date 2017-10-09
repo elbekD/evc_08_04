@@ -49,6 +49,6 @@ int evc_08_04(int n, int max_iterations, double epsilon, double* A, double* E, d
  * @param  n число выделяемых ячеек
  * @return   0 - в случае успеха
  */
-int evc_memsize_SS_NN(int n);
+int evc_memsize_08_04(int n);
 
 #endif

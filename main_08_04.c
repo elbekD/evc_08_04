@@ -5,9 +5,6 @@
 #define PRECISION_KEY "-prec="
 #define EPSILON_KEY "-eps="
 #define ITERATION_KEY "-max_iter="
-//interface
-//parse args, alloc mem, write/read to/from file
-//must print overall solving time
 
 void hint() {
     printf("Usage: evc [input_file_name] [output_file_name] [options]\n"
@@ -36,7 +33,8 @@ int main(int argc, char const *argv[])
 
     double* A = NULL;
     double* E = NULL;
-    double* tmp = NULL;
+    double* sim_tmp = NULL;
+    double* evc_tmp = NULL;
 
     char input_filename[128] = DEFAULT_IN_FILENAME;
     char output_filename[128] = DEFAULT_OUT_FILENAME;
@@ -73,28 +71,36 @@ int main(int argc, char const *argv[])
         return 0;
     }
 
-    int n;
+    int dim;
     FILE* in = fopen(input_filename, "r");
     FILE* out = fopen(output_filename, "w");
     if (in == NULL || out == NULL) {
         if (error) fprintf(stderr, "Input or output file open error\n");
+        fclose(in);
+        fclose(out);
         return __LINE__;
     }
 
-    if (fscanf(in, "%d", &n) != 1) {
-        if (error) fprintf(stderr, "Matrix dimension '%d' incorrect\n", n);
+    if (fscanf(in, "%d", &dim) != 1) {
+        if (error) fprintf(stderr, "Can not read matrix dimension\n");
         return __LINE__;
     }
 
-    A = (double*)malloc(n * n * sizeof(double));
-    E = (double*)malloc(n * sizeof(double));
+    A = (double*)malloc(dim * dim * sizeof(double));
+    E = (double*)malloc(dim * sizeof(double));
+    sim_tmp = (double*)malloc(sizeof(double) * sim_memsize_08_04(dim));
+    evc_tmp = (double*)malloc(sizeof(double) * evc_memsize_08_04(dim));
 
-    if (A == NULL || E == NULL) {
-        if (error) fprintf(stderr, "Memory allocation error\n");
+    if (A == NULL || E == NULL || sim_tmp == NULL || evc_tmp == NULL) {
+        if (error) fprintf(stderr, "Memory allocation error\nA=%p, E=%p, sim_tmp=%p, evc_tmp=%p", A, E, sim_tmp, evc_tmp);
+        free(A);
+        free(E);
+        free(sim_tmp);
+        free(evc_tmp);
         return __LINE__;
     }
 
-    for (int i = 0; i < n * n; i++) {
+    for (int i = 0; i < dim * dim; i++) {
         if (fscanf(in, "%lf", &A[i]) != 1) {
             if (error) fprintf(stderr, "Error occured during reading matrix A\n");
             return __LINE__;
@@ -102,18 +108,29 @@ int main(int argc, char const *argv[])
     }
 
     time_t overall_time = 0;
+    
     time_t s_time = clock();
-    int sim_res = sim_08_04(n, A, tmp, precision);
+    int sim_res = sim_08_04(dim, A, sim_tmp, precision);
     time_t e_time = clock();
+    
     overall_time += e_time - s_time;
+    
     if (debug) printf("Simplification time: %lf\n", (double)(e_time - s_time) / CLOCKS_PER_SEC);
 
     if (sim_res == -1) {
         if (debug) fprintf(stderr, "The simplification method is not applicable\n");
         fprintf(out, "0\n");
     } else {
+        if (print_matrix) {
+            for (int i = 0; i < dim; i++) {
+                for (int j = 0; j < dim; j++)
+                    printf("%1.3lf ", A[i*dim+j]);
+                printf("\n");
+            }
+        }
+
         s_time = clock();
-        int evc_res = evc_08_04(n, max_iterations, epsilon, A, E, tmp, precision);
+        int evc_res = evc_08_04(dim, max_iterations, epsilon, A, E, evc_tmp, precision);
         e_time = clock();
         overall_time += e_time - s_time;
         if (evc_res == -1) {
@@ -123,8 +140,8 @@ int main(int argc, char const *argv[])
             if (debug) fprintf(stderr, "EVC method does not converge. Iterations: %d\n", max_iterations);
             fprintf(out, "1\n");
         } else if (evc_res == 0) {
-            fprintf(out, "%d\n", n);
-            for (int i = 0; i < n; i++)
+            fprintf(out, "%d\n", dim);
+            for (int i = 0; i < dim; i++)
                 fprintf(out, "%1.9lf\n", E[i]);
         }
     }
@@ -134,7 +151,8 @@ int main(int argc, char const *argv[])
 
     free(A);
     free(E);
-    free(tmp);
+    free(sim_tmp);
+    free(evc_tmp);
     fclose(in);
     fclose(out);
     return 0;
