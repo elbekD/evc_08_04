@@ -26,6 +26,9 @@ int sim_08_04(int n, double* A, double* tmp, double precision) {
                 betta = -A[j*n+i-1] / tmp;
             }
 
+            if (alpha == 0 || betta == 0)
+                continue;
+
             for (int k = i - 1; k < n; k++) {
                 double a_ik = alpha * A[i*n+k] - betta * A[j*n+k];
                 double a_jk = betta * A[i*n+k] + alpha * A[j*n+k];

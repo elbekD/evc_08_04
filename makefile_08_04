@@ -1,0 +1,2 @@
+all:
+	gcc sim_08_04.c evc_08_04.c main_08_04.c -o lss -x c -O3 -lm

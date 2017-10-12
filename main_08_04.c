@@ -114,14 +114,14 @@ int main(int argc, char const *argv[])
     time_t e_time = clock();
     
     overall_time += e_time - s_time;
-    
-    if (debug) printf("Simplification time: %lf\n", (double)(e_time - s_time) / CLOCKS_PER_SEC);
 
     if (sim_res == -1) {
         if (debug) fprintf(stderr, "The simplification method is not applicable\n");
         fprintf(out, "0\n");
     } else {
         if (print_matrix) {
+            printf("\n");
+            if (debug) printf("SIM result\n");
             for (int i = 0; i < dim; i++) {
                 for (int j = 0; j < dim; j++)
                     printf("%1.3lf ", A[i*dim+j]);
@@ -129,10 +129,22 @@ int main(int argc, char const *argv[])
             }
         }
 
+        for (int i = 0; i < dim; i++) E[i] = .0;
         s_time = clock();
         int evc_res = evc_08_04(dim, max_iterations, epsilon, A, E, evc_tmp, precision);
         e_time = clock();
         overall_time += e_time - s_time;
+
+        if (print_matrix) {
+            printf("\n");
+            if (debug) printf("EVC result\n");
+            for (int i = 0; i < dim; i++) {
+                for (int j = 0; j < dim; j++)
+                    printf("%1.3lf ", A[i*dim+j]);
+                printf("\n");
+            }
+        }
+
         if (evc_res == -1) {
             if (debug) fprintf(stderr, "EVC method is not applicable\n");
             fprintf(out, "0\n");
