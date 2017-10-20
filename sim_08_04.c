@@ -2,6 +2,13 @@
 
 #include "task_08_04.h"
 
+/**
+ * Функция, проверяющая входную матрицу на симметричность
+ * @param  n размерность матрицы
+ * @param  A указатель на матрицу
+ * @return   0 - матрица не симметрична
+ *           1 - матрица симметрична
+ */
 int is_simmetric(int n, double* A) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -21,13 +28,11 @@ int sim_08_04(int n, double* A, double* tmp, double precision) {
             double tmp = sqrt(A[i*n+i-1] * A[i*n+i-1] + A[j*n+i-1] * A[j*n+i-1]);
             if (tmp < precision) {
                 alpha = betta = .0;
+                continue;
             } else {
                 alpha = A[i*n+i-1] / tmp;
                 betta = -A[j*n+i-1] / tmp;
             }
-
-            if (alpha == 0 || betta == 0)
-                continue;
 
             for (int k = i - 1; k < n; k++) {
                 double a_ik = alpha * A[i*n+k] - betta * A[j*n+k];
@@ -49,6 +54,7 @@ int sim_08_04(int n, double* A, double* tmp, double precision) {
             tmp = sqrt(A[(i-1)*n+i] * A[(i-1)*n+i] + A[(i-1)*n+j] * A[(i-1)*n+j]);
             if (tmp < precision) {
                 alpha = betta = .0;
+                continue;
             } else {
                 alpha = A[(i-1)*n+i] / tmp;
                 betta = -A[(i-1)*n+j] / tmp;
