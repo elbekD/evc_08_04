@@ -27,6 +27,7 @@ int sim_08_04(int n, double* A, double* tmp, double precision) {
         for (int j = i + 1; j < n; j++) {
             double tmp = sqrt(A[i*n+i-1] * A[i*n+i-1] + A[j*n+i-1] * A[j*n+i-1]);
             if (tmp < precision) {
+                if (debug) printf("Zerro occured\n");
                 alpha = betta = .0;
                 continue;
             } else {
@@ -53,6 +54,7 @@ int sim_08_04(int n, double* A, double* tmp, double precision) {
 
             tmp = sqrt(A[(i-1)*n+i] * A[(i-1)*n+i] + A[(i-1)*n+j] * A[(i-1)*n+j]);
             if (tmp < precision) {
+                if (debug) printf("Zerro occured\n");
                 alpha = betta = .0;
                 continue;
             } else {

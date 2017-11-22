@@ -51,9 +51,11 @@ void compute_next_A(int n, double* A) {
  */
 int is_epsilon_reached(int n, double epsilon, double* A, double* E) {
     double tmp = .0;
-    for (int i = 0; i < n; i++)
-        tmp += (A[i*n+i] - E[i]) * (A[i*n+i] - E[i]);
-    return tmp < epsilon;
+    for (int i = 0; i < n; i++) {
+        if (fabs(A[i*n+i] - E[i]) > epsilon)
+            return 0;
+    }
+    return 1;
 }
 
 int evc_08_04(int n, int max_iterations, double epsilon, double* A, double* E, double* tmp, double precision) {

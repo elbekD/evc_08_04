@@ -19,8 +19,16 @@ void hint() {
            "  -h, -?     print this and exit\n");
 }
 
+int compare(const void* a, const void* b) {
+    double res = *(double*)a - *(double*)b;
+    return res > 0 ? 1 : res == 0 ? 0 : -1;
+}
+
 int main(int argc, char const *argv[])
 {
+    time_t overall_time = 0;
+    time_t s_time = clock();
+
     debug = 0;
     error = 0;
 
@@ -93,6 +101,8 @@ int main(int argc, char const *argv[])
 
     if (A == NULL || E == NULL || sim_tmp == NULL || evc_tmp == NULL) {
         if (error) fprintf(stderr, "Memory allocation error\nA=%p, E=%p, sim_tmp=%p, evc_tmp=%p", A, E, sim_tmp, evc_tmp);
+        fclose(in);
+        fclose(out);
         free(A);
         free(E);
         free(sim_tmp);
@@ -102,18 +112,22 @@ int main(int argc, char const *argv[])
 
     for (int i = 0; i < dim * dim; i++) {
         if (fscanf(in, "%lf", &A[i]) != 1) {
-            if (error) fprintf(stderr, "Error occured during reading matrix A\n");
+            if (error) printf("Error occured during reading input matrix\n");
             return __LINE__;
         }
     }
 
-    time_t overall_time = 0;
-    
-    time_t s_time = clock();
+    if (print_matrix) {
+        printf("\n");
+        if (debug) printf("Input matrix\n");
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++)
+                printf("%1.3lf ", A[i*dim+j]);
+            printf("\n");
+        }
+    }
+
     int sim_res = sim_08_04(dim, A, sim_tmp, precision);
-    time_t e_time = clock();
-    
-    overall_time += e_time - s_time;
 
     if (sim_res == -1) {
         if (debug) fprintf(stderr, "The simplification method is not applicable\n");
@@ -130,10 +144,7 @@ int main(int argc, char const *argv[])
         }
 
         for (int i = 0; i < dim; i++) E[i] = .0;
-        s_time = clock();
         int evc_res = evc_08_04(dim, max_iterations, epsilon, A, E, evc_tmp, precision);
-        e_time = clock();
-        overall_time += e_time - s_time;
 
         if (print_matrix) {
             printf("\n");
@@ -152,14 +163,12 @@ int main(int argc, char const *argv[])
             if (debug) fprintf(stderr, "EVC method does not converge. Iterations: %d\n", max_iterations);
             fprintf(out, "1\n");
         } else if (evc_res == 0) {
+            qsort(E, dim, sizeof(double), compare);
             fprintf(out, "%d\n", dim);
             for (int i = 0; i < dim; i++)
                 fprintf(out, "%1.9lf\n", E[i]);
         }
     }
-
-    if (print_time)
-        printf("Overall time: %lf\n", (double)overall_time / CLOCKS_PER_SEC);
 
     free(A);
     free(E);
@@ -167,5 +176,14 @@ int main(int argc, char const *argv[])
     free(evc_tmp);
     fclose(in);
     fclose(out);
+
+    time_t e_time = clock();
+    overall_time += e_time - s_time;
+    if (print_time) {
+        if (debug)
+            printf("Overall time: ");
+        printf("%lf\n", (double)overall_time / CLOCKS_PER_SEC);
+    }
+
     return 0;
 }
