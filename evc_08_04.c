@@ -12,13 +12,13 @@
  */
 void LR_decomposition(int n, double* A, double precision) {
     for (int i = 1; i < n; i++) {
-        double l = fabs(A[(i-1)*n+i-1]) < precision ? .0 : A[i*n+i-1] / A[(i-1)*n+i-1];
+        double l = fabs(A[(i-1)*n+i-1]) <= precision || fabs(A[i*n+i-1]) <= precision ? .0 : A[i*n+i-1] / A[(i-1)*n+i-1];
         for (int k = i; k <= i + 1 && k < n; k++) {
             double r = A[i*n+k] - l * A[(i-1)*n+k];
             A[i*n+k] = r;
         }
         A[i*n+i-1] = l;
-    }
+    } 
 }
 
 /**
@@ -42,38 +42,36 @@ void compute_next_A(int n, double* A) {
 
 /**
  * Функция, определяющая, достигла ли точность вычисления собственных значений указанного epsilon.
- * Под точностью подразумевается сумма квадратов разности текущего вычисления собственных значений
- * и предыдущего
+ * Под точностью подразумевается сходимость матрицы L к единичной матрице.
  * @param  n       размерность матрицы
  * @param  epsilon точность вычисления
  * @param  A       указатель на матрицу
- * @param  E       указатель на вектор собственных значений
  */
-int is_epsilon_reached(int n, double epsilon, double* A, double* E) {
-    double tmp = .0;
-    for (int i = 0; i < n; i++) {
-        if (fabs(A[i*n+i] - E[i]) > epsilon)
+int is_epsilon_reached(int n, double epsilon, double* A) {
+    for (int i = 1; i < n; i++) {
+        if (fabs(A[i*n+i-1]) > epsilon) {
             return 0;
+        }
     }
     return 1;
 }
 
 int evc_08_04(int n, int max_iterations, double epsilon, double* A, double* E, double* tmp, double precision) {
     if (max_iterations <= 0) {
-        while (!is_epsilon_reached(n, epsilon, A, E)) {
-            for (int i = 0; i < n; i++)
-                E[i] = A[i*n+i];
+        while (!is_epsilon_reached(n, epsilon, A)) {
             LR_decomposition(n, A, precision);
             compute_next_A(n, A);
         }
+        for (int i = 0; i < n; i++)
+            E[i] = A[i*n+i];
         return 0;
     } else {
         for (int i = 0; i < max_iterations; i++) {
-            for (int j = 0; j < n; j++)
-                E[j] = A[j*n+j];
             LR_decomposition(n, A, precision);
             compute_next_A(n, A);
-            if (is_epsilon_reached(n, epsilon, A, E)) {
+            if (is_epsilon_reached(n, epsilon, A)) {
+                for (int j = 0; j < n; j++)
+                    E[j] = A[j*n+j];
                 return 0;
             }
         }
